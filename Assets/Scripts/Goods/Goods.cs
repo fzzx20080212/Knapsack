@@ -2,35 +2,40 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-public class Goods  {
+
+public enum GoodsSort
+{
+    Equipment=1,
+    Comsumables=2,    //消耗品
+    Others=3,
+    Undefined=0,
+}
+public abstract class Goods {
     public Sprite itemSprite;
     //此类物品的单个格子上限
     public int maxNum=1;
     public string name;
-    public bool canUse = false;
-    protected string description = "";
-    //已放置的物品数量
+    public string description = "";
+    //已放置的物品数量，和格子id
     public int putNum = 1;
-    public Sprite ItemSprite
-    {
-        get { return itemSprite; }
-    }
+
+    //该物品存放的格子,种类背包，以及主背包
+    public BagGrid sortGrid,mainGrid;
+    //物品种类
+    public GoodsSort goodsSort=GoodsSort.Undefined;
+
     public Goods()
     {
+        Init();
     }
 
-    public Goods Clone()
+ 
+    protected virtual void Init()
     {
-        Goods goods = new Goods();
-        return goods;
-    }
-	
-    //物品使用效果
-    public virtual void UseEffect()
-    {
-        Debug.Log("你使用了" + name);
+
     }
 
+    public abstract Goods Clone();
     /// <summary>
     /// 获得物品描述
     /// </summary>
