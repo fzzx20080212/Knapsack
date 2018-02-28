@@ -16,8 +16,8 @@ public class BagMgr : MonoBehaviour {
     //背包名称
     string[] bagSonName = new string[] { "AllBag", "EquipmentBag", "ConsuableBag", "OthersBag" };
 
-    //背包切换键
-    Button ABtn, EBtn, CBtn, OBtn,ClickBtn;
+ 
+    GoodsSort curBag;
 
     //单例
     public static BagMgr instance;
@@ -27,58 +27,19 @@ public class BagMgr : MonoBehaviour {
         gridPrefab = Resources.Load("Grid") as GameObject;
         bagSkin = GameObject.Find("Canvas/Panel/Bag");
 
-        #region 背包切换按钮操作
-        //背包切换按钮添加监听
-        ABtn = bagSkin.transform.Find("ABtn").GetComponent<Button>();
-        ClickBtn = ABtn;
-        ABtn.GetComponent<Image>().color= new Color(1, 1, 0,1);
-        ABtn.onClick.AddListener(delegate ()
-        {
-            ClickBtn.GetComponent<Image>().color = new Color(1, 1, 1);
-            ABtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
-            ClickBtn = ABtn;
-            OpenBag(GoodsSort.Undefined);
-        });
-        EBtn = bagSkin.transform.Find("EBtn").GetComponent<Button>();
-        EBtn.onClick.AddListener(delegate ()
-        {
-            ClickBtn.GetComponent<Image>().color = new Color(1, 1, 1);
-            EBtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
-            ClickBtn = EBtn;
-            OpenBag(GoodsSort.Equipment);
-        });
-        CBtn = bagSkin.transform.Find("CBtn").GetComponent<Button>();
-        CBtn.onClick.AddListener(delegate ()
-        {
-            ClickBtn.GetComponent<Image>().color = new Color(1, 1, 1);
-            CBtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
-            ClickBtn = CBtn;
-            OpenBag(GoodsSort.Comsumables);
-        });
-        OBtn = bagSkin.transform.Find("OBtn").GetComponent<Button>();
-        OBtn.onClick.AddListener(delegate ()
-        {
-            ClickBtn.GetComponent<Image>().color = new Color(1, 1, 1);
-            OBtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
-            ClickBtn = OBtn;
-            OpenBag(GoodsSort.Others);
-        });
-
-        #endregion
-
         Init();
-        
+        AddListener();
         StartCoroutine(DoAfterRender());
 
     }
+    #region 第一次渲染结束
 
-    //第一次渲染结束
     IEnumerator DoAfterRender()
     {
    
         yield return new WaitForFixedUpdate();
         OpenBag(GoodsSort.Undefined);
-        
+        curBag = GoodsSort.Undefined;
     }
 
     //子背包第一次渲染
@@ -89,6 +50,9 @@ public class BagMgr : MonoBehaviour {
         temp.GetComponent<ContentSizeFitter>().enabled = false;
         temp.GetComponent<GridLayoutGroup>().enabled = false;
     }
+
+    #endregion
+
     //初始化背包面板
     void Init()
     {
@@ -121,18 +85,70 @@ public class BagMgr : MonoBehaviour {
     }
 
 
- 
-	// Update is called once per frame
-	void Update () {
-   
-	}
 
-    //每获得一个物品，要同时给所有物品列表和对应类型的物品列表插入
+
+    //背包切换键
+    Button ABtn, EBtn, CBtn, OBtn, curClickBtn,sortBtn;
+    //给按钮设置监听
+    void AddListener()
+    {
+        #region 背包切换按钮操作
+        //背包切换按钮添加监听
+        ABtn = bagSkin.transform.Find("ABtn").GetComponent<Button>();
+        curClickBtn = ABtn;
+        ABtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
+        ABtn.onClick.AddListener(delegate ()
+        {
+            curClickBtn.GetComponent<Image>().color = new Color(1, 1, 1);
+            ABtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
+            curClickBtn = ABtn;
+            OpenBag(GoodsSort.Undefined);
+            curBag = GoodsSort.Undefined;
+        });
+        EBtn = bagSkin.transform.Find("EBtn").GetComponent<Button>();
+        EBtn.onClick.AddListener(delegate ()
+        {
+            curClickBtn.GetComponent<Image>().color = new Color(1, 1, 1);
+            EBtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
+            curClickBtn = EBtn;
+            OpenBag(GoodsSort.Equipment);
+            curBag = GoodsSort.Equipment;
+        });
+        CBtn = bagSkin.transform.Find("CBtn").GetComponent<Button>();
+        CBtn.onClick.AddListener(delegate ()
+        {
+            curClickBtn.GetComponent<Image>().color = new Color(1, 1, 1);
+            CBtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
+            curClickBtn = CBtn;
+            OpenBag(GoodsSort.Comsumables);
+            curBag = GoodsSort.Comsumables;
+        });
+        OBtn = bagSkin.transform.Find("OBtn").GetComponent<Button>();
+        OBtn.onClick.AddListener(delegate ()
+        {
+            curClickBtn.GetComponent<Image>().color = new Color(1, 1, 1);
+            OBtn.GetComponent<Image>().color = new Color(1, 1, 0, 1);
+            curClickBtn = OBtn;
+            OpenBag(GoodsSort.Others);
+            curBag = GoodsSort.Others;
+        });
+
+        #endregion
+
+        sortBtn = bagSkin.transform.Find("SortBtn").GetComponent<Button>();
+        sortBtn.onClick.AddListener(OnClickSort);
+
+    }
+
+
+
+
+
+    //加入一个物品
     public void AddGoods(Goods goods)
     {
 
         bagDict[GoodsSort.Undefined].AddGoods(goods);
-        //bagDict[goods.goodsSort].AddGoods(goods);
 
     }
 
@@ -152,4 +168,12 @@ public class BagMgr : MonoBehaviour {
                 bag.Value.OnClosing();
         }
     }
+
+
+    //整理背包
+    public void OnClickSort()
+    {
+        bagDict[curBag].SortBag();
+    }
+
 }

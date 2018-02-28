@@ -4,6 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System;
 public class Bag {
 
     public GameObject content;
@@ -17,8 +18,7 @@ public class Bag {
 
     //是否已经渲染过
     public bool hasRender = false;
-    //背包中拥有的所有物品
-    public List<Goods> goodsList=new List<Goods>();
+  
 
 
     public Bag(GameObject bagSon,GoodsSort sort)
@@ -82,7 +82,7 @@ public class Bag {
         }
         return null;
     }
-    //否则返回空格子
+    //否则返回首个空格子
     private BagGrid GetEmptyGrid()
     {
         foreach (BagGrid grid in gridsList)
@@ -107,6 +107,46 @@ public class Bag {
             Debug.Log(goods.goodsSort + "背包已满");
         return emptyGrid;
     }
+
+
+    private Comparison<Goods> comparison = new Comparison<Goods>((Goods x, Goods y)=>
+    {
+        if (x.GetWeight() > y.GetWeight())
+            return -1;
+        return 1;
+    });
+
+    /// <summary>
+    /// 整理背包
+    /// </summary>
+    public void SortBag()
+    {
+        List<Goods> temp = new List<Goods>();
+        foreach(BagGrid grid in gridsList)
+        {
+            if(grid.myGoods!=null)
+                temp.Add(grid.myGoods);
+        }
+        temp.Sort(comparison);
+        int i = 0;
+        for (; i < temp.Count; i++)
+        {
+            gridsList[i].myGoods = temp[i];
+            if (bagSort == GoodsSort.Undefined)
+                gridsList[i].myGoods.mainGrid = gridsList[i];
+            else
+                gridsList[i].myGoods.sortGrid = gridsList[i];
+            gridsList[i].RefreshGrid();
+
+        }
+        for (; i < gridsList.Count; i++)
+        {
+            gridsList[i].myGoods = null;
+            gridsList[i].RefreshGrid();
+        }
+
+    }
+
     #region 物品信息面板
     //展示物品信息
     public void ShowDesc(string desc, Vector2 pos)
@@ -124,6 +164,8 @@ public class Bag {
         if (descPanel.gameObject.activeSelf)
             descPanel.gameObject.SetActive(false);
     }
+
+
     #endregion
 }
 

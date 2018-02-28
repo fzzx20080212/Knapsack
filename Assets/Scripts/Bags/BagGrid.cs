@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System.Reflection;
+
 
 public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IDropHandler, IEndDragHandler
 {
@@ -33,11 +33,8 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         if (myGoods == null)
             return;
 
-        string methodName = myGoods.name + "Method";
-        MethodInfo methodInfo = GoodsMethod.instance.GetType().GetMethod(methodName);
-        if (methodInfo == null)
+        if (!myGoods.UseEffect())
             return;
-        methodInfo.Invoke(GoodsMethod.instance,new Object[] { });
         myGoods.putNum--;
         BagGrid sortGrid = myGoods.sortGrid;
         UpdateGrid();
@@ -58,6 +55,25 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         else
             text.text = (myGoods.putNum == 1) ? "" : myGoods.putNum.ToString();
         
+    }
+
+    /// <summary>
+    /// 刷新格子（用于整理背包）
+    /// </summary>
+    public void RefreshGrid()
+    {
+        if(myGoods==null)
+        {
+            image.sprite = null;
+            myBag.CloseDesc();
+            text.text = "";
+        }
+        else
+        {
+            image.sprite = myGoods.itemSprite;
+            text.text = (myGoods.putNum == 1) ? "" : myGoods.putNum.ToString();
+            
+        }
     }
     //移除物品
     public void RemoveGoods()
@@ -81,7 +97,6 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
             myGoods = goods;
             //myGoods.gridId = id;
             image.sprite = goods.itemSprite;
-            myBag.goodsList.Add(myGoods);
         }
         else
         {
@@ -117,14 +132,13 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         myGoods = goods;
         //myGoods.gridId = id;
         image.sprite = myGoods.itemSprite;
-        myBag.goodsList.Add(myGoods);
         text.text = myGoods.putNum == 1 ? "" : myGoods.putNum.ToString();
 
     }
     #endregion
 
     //交换两个格子的物品
-    public void SwapGrid(BagGrid beginGrid)
+    private void SwapGrid(BagGrid beginGrid)
     {
         if (myGoods == null)
         {
@@ -143,8 +157,44 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
             beginGrid.SetGoods(myGoods);
             RemoveGoods();
             SetGoods(tempGoods);
+
+            if (myBag.bagSort == GoodsSort.Undefined)
+            {
+                myGoods.mainGrid = beginGrid.myGoods.mainGrid;
+                beginGrid.myGoods.mainGrid = tempGoods.mainGrid;
+            }
+            else
+            {
+                myGoods.sortGrid = beginGrid.myGoods.sortGrid;
+                beginGrid.myGoods.sortGrid = tempGoods.sortGrid;
+            }
         }
     }
+
+    //当两个格子物品种类相同时，叠加物品
+    private void OverlayGoods(BagGrid beginGrid)
+    {
+        if (myGoods.putNum >= myGoods.maxNum)
+            return;
+        int sum = myGoods.putNum + beginGrid.myGoods.putNum;
+        if (sum <= myGoods.maxNum)
+        {
+            myGoods.putNum = sum;
+            beginGrid.myGoods.putNum=0;
+        }
+        else
+        {
+            beginGrid.myGoods.putNum = myGoods.putNum - (myGoods.maxNum - myGoods.putNum);
+            myGoods.putNum = myGoods.maxNum;
+            
+        }
+        BagGrid tempGrid = beginGrid.myGoods.sortGrid;
+        myGoods.mainGrid.UpdateGrid();
+        beginGrid.myGoods.mainGrid.UpdateGrid();
+        myGoods.sortGrid.UpdateGrid();
+        tempGrid.UpdateGrid();
+    }
+
 
     #region 事件监听
     public void OnPointerClick(PointerEventData eventData)
@@ -193,7 +243,10 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
 
         if (beginGrid.myGoods == null)
             return;
-        SwapGrid(beginGrid);
+        if (myGoods!=null&&beginGrid.myGoods.name == myGoods.name)
+            OverlayGoods(beginGrid);
+        else
+            SwapGrid(beginGrid);
     }
 
     public void OnEndDrag(PointerEventData eventData)

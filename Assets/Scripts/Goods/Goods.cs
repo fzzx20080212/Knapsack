@@ -23,16 +23,21 @@ public abstract class Goods {
     public BagGrid sortGrid,mainGrid;
     //物品种类
     public GoodsSort goodsSort=GoodsSort.Undefined;
-
+   
     public Goods()
     {
-        Init();
+
     }
 
- 
-    protected virtual void Init()
+    public virtual bool UseEffect()
     {
+        return false;
+    }
 
+    //获得该物品的排列权重
+    public int GetWeight()
+    {
+        return (int)goodsSort * 1000;
     }
 
     public abstract Goods Clone();
@@ -46,3 +51,4 @@ public abstract class Goods {
     }
     
 }
+

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Reflection;
 
 /// <summary>
 /// 消耗品类
@@ -22,5 +23,13 @@ public  class Consumable : Goods
         return consumable;
     }
 
-
+    public override bool UseEffect()
+    {
+        string methodName = name + "Method";
+        MethodInfo methodInfo = GoodsMethod.instance.GetType().GetMethod(methodName);
+        if (methodInfo == null)
+            return false;
+        methodInfo.Invoke(GoodsMethod.instance, new Object[] { });
+        return true;
+    }
 }
