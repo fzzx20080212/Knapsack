@@ -94,7 +94,7 @@ public class Bag {
     }
 
     /// <summary>
-    /// 关联格子中的物品
+    /// 找到对应物品类背包中存放该物体的格子
     /// </summary>
     /// <param name="goods"></param>
     /// <returns>被关联的格子</returns>
@@ -102,7 +102,11 @@ public class Bag {
     {
         BagGrid emptyGrid = GetEmptyGrid();
         if (emptyGrid != null)
-            emptyGrid.RelGoods(goods);
+        {
+            emptyGrid.myGoods = goods;
+            emptyGrid.RefreshGrid();
+        }
+
         else
             Debug.Log(goods.goodsSort + "背包已满");
         return emptyGrid;

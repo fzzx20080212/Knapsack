@@ -71,7 +71,6 @@ public class BagMgr : MonoBehaviour {
 
                     BagGrid bagGrid = temp.AddComponent<BagGrid>();
                     bagGrid.myBag = bag;
-                    bagGrid.id = j + i * column;
                     temp.transform.SetParent(content, false);
                     //BagGrid bagGrid = new BagGrid(temp);
                     gridsList.Add(bagGrid);

@@ -16,7 +16,6 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     Image image;
     Text text;
     //格子Id
-    public int id;
     public Bag myBag;
     public void Start()
     {
@@ -37,28 +36,14 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
             return;
         myGoods.putNum--;
         BagGrid sortGrid = myGoods.sortGrid;
-        UpdateGrid();
-        sortGrid.UpdateGrid();
+        RefreshGrid();
+        sortGrid.RefreshGrid();
 
     }
-    //更新格子
-    public void UpdateGrid()
-    {
-        if (myGoods.putNum == 0)
-        {
-            if (myGoods != null)
-                myGoods = null;
-            image.sprite = null;
-            myBag.CloseDesc();
-            text.text = "";
-        }
-        else
-            text.text = (myGoods.putNum == 1) ? "" : myGoods.putNum.ToString();
-        
-    }
+ 
 
     /// <summary>
-    /// 刷新格子（用于整理背包）
+    /// 刷新格子
     /// </summary>
     public void RefreshGrid()
     {
@@ -67,22 +52,22 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
             image.sprite = null;
             myBag.CloseDesc();
             text.text = "";
+            return;
+        }
+        if (myGoods.putNum == 0)
+        {
+            image.sprite = null;
+            myBag.CloseDesc();
+            text.text = "";
+            myGoods = null;
         }
         else
         {
             image.sprite = myGoods.itemSprite;
-            text.text = (myGoods.putNum == 1) ? "" : myGoods.putNum.ToString();
-            
+            text.text = (myGoods.putNum == 1) ? "" : myGoods.putNum.ToString();  
         }
     }
-    //移除物品
-    public void RemoveGoods()
-    {
-        myGoods = null;
-        image.sprite = null;
-        text.text = "";
-        myBag.CloseDesc();
-    }
+
 
 
     #region 添加物品
@@ -101,7 +86,7 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         else
         {
             myGoods.putNum += goods.putNum;
-            myGoods.sortGrid.UpdateGrid();
+            myGoods.sortGrid.RefreshGrid();
         }
         text.text = myGoods.putNum == 1 ? "" : myGoods.putNum.ToString();
 
@@ -126,49 +111,36 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     }
 
 
-    //所有栏物品与对应背包内的物品进行引用传递进行关联,这样能保证，在增加和减少对应物品数量时能只单操作物品数据，而不用考虑所在物品所属背包
-    public void RelGoods(Goods goods)
-    {
-        myGoods = goods;
-        //myGoods.gridId = id;
-        image.sprite = myGoods.itemSprite;
-        text.text = myGoods.putNum == 1 ? "" : myGoods.putNum.ToString();
 
-    }
     #endregion
 
     //交换两个格子的物品
     private void SwapGrid(BagGrid beginGrid)
     {
-        if (myGoods == null)
+        Goods temp = beginGrid.myGoods;
+        beginGrid.myGoods = myGoods;
+        myGoods = temp;
+        if (myBag.bagSort == GoodsSort.Undefined)
         {
-            SetGoods(beginGrid.myGoods);
-            if (myBag.bagSort == GoodsSort.Undefined)
-                myGoods.mainGrid = this;
-            else
-                myGoods.sortGrid = this;
-            beginGrid.RemoveGoods();
-
+            if (beginGrid.myGoods != null)
+            {
+                beginGrid.myGoods.mainGrid = temp.mainGrid;
+            }
+            myGoods.mainGrid.RefreshGrid();
+            myGoods.mainGrid = this;
+            myGoods.mainGrid.RefreshGrid();
         }
         else
         {
-            Goods tempGoods = beginGrid.myGoods;
-            beginGrid.RemoveGoods();
-            beginGrid.SetGoods(myGoods);
-            RemoveGoods();
-            SetGoods(tempGoods);
-
-            if (myBag.bagSort == GoodsSort.Undefined)
+            if (beginGrid.myGoods != null)
             {
-                myGoods.mainGrid = beginGrid.myGoods.mainGrid;
-                beginGrid.myGoods.mainGrid = tempGoods.mainGrid;
+                beginGrid.myGoods.sortGrid = temp.sortGrid;
             }
-            else
-            {
-                myGoods.sortGrid = beginGrid.myGoods.sortGrid;
-                beginGrid.myGoods.sortGrid = tempGoods.sortGrid;
-            }
+            myGoods.sortGrid.RefreshGrid();
+            myGoods.sortGrid = this;
+            myGoods.sortGrid.RefreshGrid();
         }
+
     }
 
     //当两个格子物品种类相同时，叠加物品
@@ -184,15 +156,15 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         }
         else
         {
-            beginGrid.myGoods.putNum = myGoods.putNum - (myGoods.maxNum - myGoods.putNum);
+            beginGrid.myGoods.putNum -= myGoods.maxNum - myGoods.putNum;
             myGoods.putNum = myGoods.maxNum;
             
         }
+        myGoods.mainGrid.RefreshGrid();
+        myGoods.sortGrid.RefreshGrid();
         BagGrid tempGrid = beginGrid.myGoods.sortGrid;
-        myGoods.mainGrid.UpdateGrid();
-        beginGrid.myGoods.mainGrid.UpdateGrid();
-        myGoods.sortGrid.UpdateGrid();
-        tempGrid.UpdateGrid();
+        beginGrid.myGoods.mainGrid.RefreshGrid();
+        tempGrid.RefreshGrid();
     }
 
 
