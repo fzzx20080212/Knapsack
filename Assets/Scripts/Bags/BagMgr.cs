@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class BagMgr : MonoBehaviour {
 
@@ -15,7 +16,8 @@ public class BagMgr : MonoBehaviour {
     public Dictionary<GoodsSort, Bag> bagDict = new Dictionary<GoodsSort, Bag>();
     //背包名称
     string[] bagSonName = new string[] { "AllBag", "EquipmentBag", "ConsuableBag", "OthersBag" };
-
+    //用于物体拖动的图片
+    public Image dragImage;
  
     GoodsSort curBag;
 
@@ -26,7 +28,8 @@ public class BagMgr : MonoBehaviour {
         instance = this;
         gridPrefab = Resources.Load("Grid") as GameObject;
         bagSkin = GameObject.Find("Canvas/Panel/Bag");
-
+        dragImage = GameObject.Find("Tips/DragImage").GetComponent<Image>();
+        dragImage.gameObject.SetActive(false);
         Init();
         AddListener();
         StartCoroutine(DoAfterRender());
@@ -174,5 +177,7 @@ public class BagMgr : MonoBehaviour {
     {
         bagDict[curBag].SortBag();
     }
+
+
 
 }

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 
-public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IDropHandler, IEndDragHandler
+public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IDragHandler, IDropHandler, IEndDragHandler,IBeginDragHandler
 {
     //背包格子
     GameObject myGrid;
@@ -168,6 +168,18 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     }
 
 
+    //丢弃物品
+    public void ThrowGoods(int num)
+    {
+        myGoods.putNum -=num;
+        if (myGoods.putNum < 0)
+            myGoods.putNum = 0;
+        BagGrid temp = myGoods.sortGrid;
+        myGoods.mainGrid.RefreshGrid();
+
+        temp.RefreshGrid();
+    }
+
     #region 事件监听
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -179,7 +191,7 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (myGoods == null)
+        if (myGoods == null||!myBag.canShowDesc)
             return;
         myBag.ShowDesc(myGoods.GetDescription(), eventData.pointerEnter.transform.position);
     }
@@ -192,18 +204,16 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         myBag.CloseDesc();
     }
 
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-
-    }
+  
 
     public void OnDrag(PointerEventData eventData)
     {
         if (myGoods != null)
         {
-            image.transform.position = eventData.position;
+            //image.transform.position = eventData.position;
             //设置当前格子层级最高，否则会造成遮挡
-            myGrid.transform.SetAsLastSibling();
+            //myGrid.transform.SetAsLastSibling();
+            BagMgr.instance.dragImage.transform.position = eventData.position;
         }
 
     }
@@ -223,7 +233,20 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        image.transform.localPosition = imagePos;
+        //image.transform.localPosition = imagePos;
+        image.gameObject.SetActive(true);
+        myBag.canShowDesc = true;
+        BagMgr.instance.dragImage.gameObject.SetActive(false);
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        myBag.canShowDesc = false;
+        myBag.CloseDesc();
+        BagMgr.instance.dragImage.gameObject.SetActive(true);
+        image.gameObject.SetActive(false);
+        BagMgr.instance.dragImage.sprite = myGoods.itemSprite;
+        BagMgr.instance.dragImage.transform.Find("Text").GetComponent<Text>().text = myGoods.putNum.ToString();
     }
 
 

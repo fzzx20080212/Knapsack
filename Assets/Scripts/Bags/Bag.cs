@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -14,6 +13,8 @@ public class Bag {
     Transform descPanel;
     float descWidth;
     Text t_desc;
+    //能否显示信息框（物品拖动时不显示信息框）
+    public bool canShowDesc=true;
     public GoodsSort bagSort;
 
     //是否已经渲染过
