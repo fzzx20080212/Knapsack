@@ -15,6 +15,7 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     Vector2 imagePos;
     Image image;
     Text text;
+    float gridWidth;
     //格子Id
     public Bag myBag;
     public void Start()
@@ -22,10 +23,15 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         myGrid = this.gameObject;
         image = myGrid.transform.Find("Image").GetComponent<Image>();
         imagePos = image.transform.localPosition;
+        gridWidth = myGrid.GetComponent<RectTransform>().sizeDelta.x;
         text = image.transform.Find("count").GetComponent<Text>();
 
     }
 
+    void Update()
+    {
+        
+    }
     //使用物品
     public void UseGoods()
     {
@@ -193,7 +199,7 @@ public class BagGrid : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     {
         if (myGoods == null||!myBag.canShowDesc)
             return;
-        myBag.ShowDesc(myGoods.GetDescription(), eventData.pointerEnter.transform.position);
+        myBag.ShowDesc(myGoods.GetDescription(), eventData.pointerEnter.transform.position-new Vector3(gridWidth/2,0,0));
     }
 
 
